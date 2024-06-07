@@ -89,7 +89,7 @@ class Scanner {
 			case '/':
 				if(match('/')) {
 					// consume the entire line as it is a comment
-					while (peak() != '\n' && !isAtEnd()) advance();
+					while (peek() != '\n' && !isAtEnd()) advance();
 				} else {
 					addToken(SLASH);
 				}
