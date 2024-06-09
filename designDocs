@@ -2,4 +2,9 @@
 - (java interpreter)
 - added the interpreter class (Lox)
 - added the scanner class
-- added simple build instructions
+- added simple build instructions with makefile
+# 3cbf2bc
+- (java interpreter)
+- added tests for scanner class
+- added java.make makefile to run tests
+- updated main makefile
