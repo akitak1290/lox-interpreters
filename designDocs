@@ -3,14 +3,16 @@
 - added the interpreter class (Lox)
 - added the scanner class
 - added simple build instructions with makefile
+
 # 3cbf2bc
 - (java interpreter)
 - added tests for scanner class
 - added java.make makefile to run tests
 - updated main makefile
+
 # 5d21328
 - (java interpreter)
-- added an standalone java app to generate the Expr class
+- added a standalone java app to generate the Expr class
   (To use, compile and run `tool.GenerateAst lox` to output
    the class to the lox directory. Run make after)
 - added a printer class to debug the abstract syntax tree logic

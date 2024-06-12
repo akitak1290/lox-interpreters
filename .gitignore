@@ -1,2 +1,3 @@
 build/
 jlox
+java/tool/GenerateAst.class
