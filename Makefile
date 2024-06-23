@@ -2,9 +2,6 @@
 
 all: jlox
 
-hello:
-	@ echo "Hello world"
-
 jlox:
 	@ $(MAKE) -f util/java.make DIR=java PACKAGE=lox
 
