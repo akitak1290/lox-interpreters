@@ -27,4 +27,9 @@ $(BUILD_DIR)/$(DIR)/%.class: $(DIR)/%.java
 	@ javac -cp $(DIR) -d $(BUILD_DIR)/$(DIR) $<
 	@ @ printf "%8s %-60s %s\n" javac $<
 
-.PHONY: default jlox packages
+clean:
+	@ echo "Removing previous built..."
+	@ rm -rf build
+	@ rm jlox
+
+.PHONY: default jlox packages clean
