@@ -6,10 +6,10 @@ TEST_FILES := $(wildcard $(TEST_DIR)/*.test.lox)
 ACTION_LIST := $(patsubst $(TEST_DIR)/%.test.lox, $(TEST_DIR)/%, $(TEST_FILES))
 
 test: $(ACTION_LIST)
-	@ echo "All tests completed successfully."
+	@ echo "$(TEST_TYPE) tests completed"
 
 $(ACTION_LIST):
-	@ $(ROOT)/$(INTERPRETER) $@.test.lox > $@.tmp;
+	@ $(ROOT)/$(INTERPRETER) $@.test.lox --debug $(TEST_TYPE) > $@.tmp;
 	@ if diff -q $@.result.lox $@.tmp > /dev/null; then \
 		echo "Test $@: PASSED"; \
 		rm $@.tmp; \

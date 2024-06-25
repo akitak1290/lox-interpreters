@@ -15,19 +15,25 @@ public class Lox {
 	 */
 	static boolean hadError = false;
 
+	// For running tests on individual parts
+	static String DEBUG_FLAG = "";	
+
 	/*
 	 * There are 2 ways to run a lox file
 	 * - 1: Pass in the path to the file and this will execute it
 	 * - 2: Pass in nothing and type the lox code one line at a time
 	 */
 	public static void main(String[] args) throws IOException {
-		if (args.length > 1) {
-			System.out.println("Usage: jlox [script]");
-			System.exit(64); // standard UNIX exit code
+		if (args.length == 0) {
+			runPrompt();
 		} else if (args.length == 1) {
 			runFile(args[0]);
+		} else if (args.length == 3 && args[1].equals("--debug")) {
+			DEBUG_FLAG = args[2];
+			runFile(args[0]);
 		} else {
-			runPrompt();
+			System.out.println("Usage: jlox [script] --debug [test folder]");
+			System.exit(64); // standard UNIX exit code
 		}
 	}
 
@@ -69,18 +75,37 @@ public class Lox {
 		Scanner scanner = new Scanner(source);
 		List<Token> tokens = scanner.scanTokens();
 
-		// for (Token token : tokens) {
-		//  	System.out.println(token);
-		// }
-		Parser parser = new Parser(tokens);
-		Expr expression = parser.parse();
+		switch (DEBUG_FLAG) {
+			case "":
+				// No debug flag, let fallthrough to
+				// the most recent added part.
+				// TODO: refactor this when done with the
+				// interpreter...
+			case "parsing":
+				// Check Scanner and Parser
+		  		Parser parser = new Parser(tokens);
+				Expr expression = parser.parse();
 
-		// Stop if parser encounter error
-		// Flag is set when parser call Lox.error()
-		// static method to report error.
-		if (hadError) return;
+				// Flag is set when the parser calls
+				// Lox's static mothod to report error
+				if (hadError) return;
 
-		System.out.println(new AstPrinter().print(expression));
+				System.out.println(new AstPrinter().print(expression));
+				break;
+			case "scanning":
+
+				// Flag is set when parser call Lox.error()
+				// static method to report error.
+				// Only check Scanner
+				for (Token token : tokens) {
+		  			System.out.println(token);
+				}
+			default:
+				// This should be handled in main()
+				// before it reaches here
+				// TODO: refactor this
+				return;
+		}
 	}
 	
 	/*

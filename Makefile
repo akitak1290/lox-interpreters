@@ -1,12 +1,16 @@
 # if then else is a shell command
 
+TEST_FOLDERS := scanning parsing
+
 all: jlox
 
 jlox:
 	@ $(MAKE) -f util/java.make DIR=java PACKAGE=lox
 
-test:
-	@ $(MAKE) -f util/test.make ROOT=. INTERPRETER=jlox TEST_TYPE=scanning	
+test: $(TEST_FOLDERS)
+	
+$(TEST_FOLDERS):
+	@ $(MAKE) -f util/test.make ROOT=. INTERPRETER=jlox TEST_TYPE=$@	
 
 clean:
 	@ $(MAKE) -f util/java.make clean
