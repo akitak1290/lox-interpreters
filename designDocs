@@ -18,3 +18,10 @@
 - added a printer class to debug the abstract syntax tree logic
   also added in main() a temporary logic for testing
   (To use, go under build/java/ and run `lox.AstPrinter`
+
+# b81fe2c
+- (java interpreter)
+- added the parser class to implement Lox grammar
+
+#7081c8f
+- added tests for the parser class
