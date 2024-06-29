@@ -30,6 +30,8 @@ $(BUILD_DIR)/$(DIR)/%.class: $(DIR)/%.java
 clean:
 	@ echo "Removing previous built..."
 	@ rm -rf build
+ifeq ("./jlox", $(wildcard ./jlox))
 	@ rm jlox
+endif
 
 .PHONY: default jlox packages clean
