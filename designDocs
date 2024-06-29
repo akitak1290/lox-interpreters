@@ -23,5 +23,14 @@
 - (java interpreter)
 - added the parser class to implement Lox grammar
 
-#7081c8f
+# 7081c8f
 - added tests for the parser class
+
+# 82332d5
+- added interpreter class to evaluate the expression represented
+by ast
+
+# cfe2216
+- added simple test for the interpreter class
+
+
