@@ -9,11 +9,17 @@ import java.nio.file.Paths;
 import java.util.List;
 
 public class Lox {
+	/*
+	 * A gateway to the interpreting logics 
+	 * Is static so global variables stored by it
+	 * persists in REPL mode
+	 */
+	private static final Interpreter interpreter = new Interpreter();
 	/* 
-	 * Class method to act as flag to stop
-	 * the interpreter when there is an error
+	 * Flags to stop the interpreter when there is an error
 	 */
 	static boolean hadError = false;
+	static boolean hadRuntimeError = false;
 
 	// For running tests on individual parts
 	static String DEBUG_FLAG = "";	
@@ -32,7 +38,7 @@ public class Lox {
 			DEBUG_FLAG = args[2];
 			runFile(args[0]);
 		} else {
-			System.out.println("Usage: jlox [script] --debug [test folder]");
+			System.out.println("Usage: jlox [script] --debug [flag]");
 			System.exit(64); // standard UNIX exit code
 		}
 	}
@@ -44,7 +50,10 @@ public class Lox {
 		byte[] bytes = Files.readAllBytes(Paths.get(path));
 		run(new String(bytes, Charset.defaultCharset()));
 
+		// Some etiquette when the interpreter quits
+		// with and error
 		if (hadError) System.exit(65);
+		if (hadRuntimeError) System.exit(70);
 	}
 	
 	/*
@@ -75,31 +84,40 @@ public class Lox {
 		Scanner scanner = new Scanner(source);
 		List<Token> tokens = scanner.scanTokens();
 
+		// Don't initialize these here because the parser only
+		// parse arithmetics expression for now
+		// TODO: refactor this when done with the interpreter...
+		Parser parser = null;
+		Expr expression = null;
+		
+		// hadError is set when the parser calls
+		// Lox's static mothod to report error
 		switch (DEBUG_FLAG) {
 			case "":
 				// No debug flag, let fallthrough to
 				// the most recent added part.
-				// TODO: refactor this when done with the
-				// interpreter...
-			case "parsing":
-				// Check Scanner and Parser
-		  		Parser parser = new Parser(tokens);
-				Expr expression = parser.parse();
+				// TODO: refactor this when done with the interpreter...
+			case "interpreting":
+				parser = new Parser(tokens);
+				expression = parser.parse();
 
-				// Flag is set when the parser calls
-				// Lox's static mothod to report error
+				if (hadError) return;
+
+				interpreter.interpret(expression);
+				break;
+			case "parsing":
+				parser = new Parser(tokens);
+				expression = parser.parse();
+
 				if (hadError) return;
 
 				System.out.println(new AstPrinter().print(expression));
 				break;
 			case "scanning":
-
-				// Flag is set when parser call Lox.error()
-				// static method to report error.
-				// Only check Scanner
 				for (Token token : tokens) {
 		  			System.out.println(token);
 				}
+				break;
 			default:
 				// This should be handled in main()
 				// before it reaches here
@@ -113,6 +131,14 @@ public class Lox {
 	 */
 	static void error(int line, String message) {
 		report(line, "", message);
+	}
+
+	/*
+	 * Error reporter for the interpreter
+	 */
+	static void runtimeError(RuntimeError error) {
+		System.err.println(error.getMessage() + "\n[line " + error.token.line + "]");
+		hadRuntimeError = true;
 	}
 
 	/*
