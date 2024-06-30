@@ -6,7 +6,9 @@ BUILD_DIR := build
 SOURCES = $(wildcard $(DIR)/$(PACKAGE)/*.java)
 CLASSES = $(addprefix $(BUILD_DIR)/, $(SOURCES:.java=.class))
 
-default: jlox $(CLASSES)
+CURR_DIR = .
+
+default: jlox generators $(CLASSES)
 	@: # Don't show "Nothing to be done" output.
 
 jlox: packages
@@ -22,6 +24,13 @@ ifeq (, $(shell which java))
 	@ sudo apt-get install javac
 endif
 
+generators: GenerateAst.class
+	@ java -cp $(CURR_DIR)/java tool.GenerateAst $(CURR_DIR)/java/lox
+	@ rm $(CURR_DIR)/java/tool/GenerateAst.class
+
+GenerateAst.class:
+	@ javac $(CURR_DIR)/java/tool/GenerateAst.java
+
 $(BUILD_DIR)/$(DIR)/%.class: $(DIR)/%.java
 	@ mkdir -p $(BUILD_DIR)/$(DIR)
 	@ javac -cp $(DIR) -d $(BUILD_DIR)/$(DIR) $<
@@ -34,4 +43,4 @@ ifeq ("./jlox", $(wildcard ./jlox))
 	@ rm jlox
 endif
 
-.PHONY: default jlox packages clean
+.PHONY: default jlox packages generators clean
