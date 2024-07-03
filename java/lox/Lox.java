@@ -83,13 +83,8 @@ public class Lox {
 	private static void run(String source) {
 		Scanner scanner = new Scanner(source);
 		List<Token> tokens = scanner.scanTokens();
-
-		// Don't initialize these here because the parser only
-		// parse arithmetics expression for now
-		// TODO: refactor this when done with the interpreter...
 		Parser parser = null;
 		Expr expression = null;
-		
 		// hadError is set when the parser calls
 		// Lox's static mothod to report error
 		switch (DEBUG_FLAG) {
@@ -97,17 +92,27 @@ public class Lox {
 				// No debug flag, let fallthrough to
 				// the most recent added part.
 				// TODO: refactor this when done with the interpreter...
+			/*
 			case "interpreting":
 				parser = new Parser(tokens);
-				expression = parser.parse();
+				List<Stmt> statements = parser.parse();
 
 				if (hadError) return;
 
-				interpreter.interpret(expression);
+				interpreter.interpret(statements);
+				break;
+				*/
+			case "evaluating":
+				parser = new Parser(tokens);
+				expression = parser.parseExpression();
+
+				if (hadError) return;
+
+				interpreter.interpretExpression(expression);
 				break;
 			case "parsing":
 				parser = new Parser(tokens);
-				expression = parser.parse();
+				expression = parser.parseExpression();
 
 				if (hadError) return;
 

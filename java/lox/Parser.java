@@ -1,5 +1,6 @@
 package lox;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static lox.TokenType.*;
@@ -16,21 +17,79 @@ class Parser {
 
 	/*
 	 * The main method
+	 * #7081c8f partial parsing for 1 line arithmetic
+	 *
+	 * @return Stmt[]
 	 */
-	Expr parse() {
-		try {
-			// Begin parsing
-			return expression();
-		} catch (ParseError error) {
-			return null;
+	/*
+	List<Stmt> parse() {
+		List<Stmt> statements = new ArrayList<>();
+		while(!isAtEnd()) {
+			statements.add(statement());
 		}
+
+		return statements;
+	}
+	*/
+
+	/*
+	 * Legacy parse() for testing purpose
+	 *
+	 * @return Expr
+	 */
+	Expr parseExpression() {
+		return expression();
+	}
+
+
+
+	/*
+	 * Main statements parse
+	 *
+	 * @return Stmt
+	 */
+	private Stmt statement() {
+		if (match(PRINT)) return printStatement();
+
+		return expressionStatement();
 	}
 
 	/* 
 	 * The hierarchy is written in a way that
 	 * allow fall-through from lower precedence
-	 * expr to higher, hence the decent parsing
+	 * expr to higher
 	 */
+
+	// ##################################################################
+	// Statements
+	
+	/*
+	 * Parse a print expression
+	 * semicolon is not parsed so we check
+	 * for it here as a 'stop anchor'
+	 *
+	 * @return Stmt statement wrapper
+	 */
+	private Stmt printStatement() {
+		Expr value = expression();
+		consume(SEMICOLON, "Expect ';' after value.");
+		return new Stmt.Print(value);
+	}
+
+	/*
+	 * Parse an expression statement
+	 * semicolon is the 'stop anchor'
+	 *
+	 * @return Stmt statement wrapper
+	 */
+	private Stmt expressionStatement() {
+		Expr expr = expression();
+		consume(SEMICOLON, "Expect ';' after expression.");
+		return new Stmt.Expression(expr);
+	}
+
+	// ##################################################################
+	// Expressions
 
 	/*
 	 * Rule for expression
@@ -159,6 +218,9 @@ class Parser {
 		// A token that can't start an expression
 		throw error(peek(), "Expect expresson.");
 	}
+
+	// ##################################################################
+	// Helpers
 
 	/*
 	 * Helper method

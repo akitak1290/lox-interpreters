@@ -1,14 +1,32 @@
 package lox;
 
-class Interpreter implements Expr.Visitor<Object> {
-	void interpret(Expr expression) {
+import java.util.List;
+
+class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
+	// #82332d5 accept an expression that represetns an ast
+	// 	    and evaluate it
+	// accept a list of statements that represents
+	// a Lox script and execute them
+	/*
+	void interpret(List<Stmt> statements) {
 		try {
-			Object value = evaluate(expression);
-			System.out.println(stringify(value));
+			for (Stmt statement : statements) {
+				execute(statement);
+			}
 		} catch (RuntimeError error) {
 			Lox.runtimeError(error);
 		}
 	}
+	*/
+
+	/*
+	 * Legacy interpret for debugging
+	 */
+	void interpretExpression(Expr expression) {
+		Object value = evaluate(expression);
+		System.out.println(stringify(value));
+	}
+
 
 	@Override
 	public Object visitLiteralExpr(Expr.Literal expr) {
@@ -178,6 +196,29 @@ class Interpreter implements Expr.Visitor<Object> {
 		return expr.accept(this);
 	}
 
+	/*
+	 * Helper method
+	 * Like evaluate, but for statements
+	 * Call the correct visitor method from
+	 * this class
+	 *
+	 * @stmt Stmt
+	 */
+	private void execute(Stmt stmt) {
+		stmt.accept(this);
+	}
 
+	@Override
+	public Void visitExpressionStmt(Stmt.Expression stmt) {
+		evaluate(stmt.expression);
+		return null;
+	}
+
+	@Override 
+	public Void visitPrintStmt(Stmt.Print stmt) {
+		Object value = evaluate(stmt.expression);
+		System.out.println(stringify(value));
+		return null;
+	}
 
 }
