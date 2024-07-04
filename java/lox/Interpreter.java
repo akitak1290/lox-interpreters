@@ -6,6 +6,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 	/*
 	 * Store variables/identifier, exist while interpreter
 	 * is running
+	 * Refers to the current environment.
 	 */
 	private Environment environment = new Environment();
 
@@ -212,8 +213,42 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 		stmt.accept(this);
 	}
 
+	/*
+	 * Helper method
+	 * Execute a block statement
+	 * This can call to another visitBlockStmt to
+	 * run an inner block, hence why we need to
+	 * update the env state, run it, and restore
+	 * it to the previous state.
+	 *
+	 * @statements List<Stmt> list of statements
+	 * 			  declared in the scope
+	 * @environment Environment the current env
+	 */
+	void executeBlock(List<Stmt> statements, Environment environment) {
+		Environment previous = this.environment;
+		try {
+			this.environment = environment;
+
+			for (Stmt statement : statements) {
+				execute(statement);
+			}
+		} finally {
+			this.environment = previous;
+		}
+	}
+
 	// ##################################################################
 	// Evaluate statements
+
+	/*
+	 * Evaluate/execute a block statement
+	 */
+	@Override
+	public Void visitBlockStmt(Stmt.Block stmt) {
+		executeBlock(stmt.statements, new Environment(environment));
+		return null;
+	}
 
 	/*
 	 * Evaluate a variable declaration statement,
@@ -229,6 +264,14 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
 		environment.define(stmt.name.lexeme, value);
 		return null;
+	}
+
+
+	@Override
+	public Object visitAssignExpr(Expr.Assign expr) {
+		Object value = evaluate(expr.value);
+		environment.assign(expr.name, value);
+		return value;
 	}
 
 	/*
