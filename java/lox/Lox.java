@@ -92,7 +92,6 @@ public class Lox {
 				// No debug flag, let fallthrough to
 				// the most recent added part.
 				// TODO: refactor this when done with the interpreter...
-			/*
 			case "interpreting":
 				parser = new Parser(tokens);
 				List<Stmt> statements = parser.parse();
@@ -101,7 +100,6 @@ public class Lox {
 
 				interpreter.interpret(statements);
 				break;
-				*/
 			case "evaluating":
 				parser = new Parser(tokens);
 				expression = parser.parseExpression();

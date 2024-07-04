@@ -3,11 +3,16 @@ package lox;
 import java.util.List;
 
 class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
+	/*
+	 * Store variables/identifier, exist while interpreter
+	 * is running
+	 */
+	private Environment environment = new Environment();
+
 	// #82332d5 accept an expression that represetns an ast
 	// 	    and evaluate it
 	// accept a list of statements that represents
 	// a Lox script and execute them
-	/*
 	void interpret(List<Stmt> statements) {
 		try {
 			for (Stmt statement : statements) {
@@ -17,7 +22,6 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 			Lox.runtimeError(error);
 		}
 	}
-	*/
 
 	/*
 	 * Legacy interpret for debugging
@@ -206,6 +210,34 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 	 */
 	private void execute(Stmt stmt) {
 		stmt.accept(this);
+	}
+
+	// ##################################################################
+	// Evaluate statements
+
+	/*
+	 * Evaluate a variable declaration statement,
+	 * assign null as default value and add to
+	 * the enviroment.
+	 */
+	@Override
+	public Void visitVarStmt(Stmt.Var stmt) {
+		Object value = null;
+		if (stmt.initializer != null) {
+			value = evaluate(stmt.initializer);
+		}
+
+		environment.define(stmt.name.lexeme, value);
+		return null;
+	}
+
+	/*
+	 * Evaluate a variable expression (get value
+	 * from a variable)
+	 */
+	@Override
+	public Object visitVariableExpr(Expr.Variable expr) {
+		return environment.get(expr.name);
 	}
 
 	@Override

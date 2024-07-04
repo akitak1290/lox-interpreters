@@ -21,16 +21,14 @@ class Parser {
 	 *
 	 * @return Stmt[]
 	 */
-	/*
 	List<Stmt> parse() {
 		List<Stmt> statements = new ArrayList<>();
 		while(!isAtEnd()) {
-			statements.add(statement());
+			statements.add(declaration());
 		}
 
 		return statements;
 	}
-	*/
 
 	/*
 	 * Legacy parse() for testing purpose
@@ -42,7 +40,47 @@ class Parser {
 	}
 
 
+	/* 
+	 * The hierarchy is written in a way that
+	 * allow fall-through from lower precedence
+	 * expr to higher
+	 */
+	private Stmt declaration() {
+		try {
+			if (match(VAR)) return varDeclaration();
 
+			return statement();
+		} catch (ParseError error) {
+			// Read until next statement to
+			// skip current error and parse
+			// next statement
+			synchronize();
+			return null;
+		}
+	}
+
+	/*
+	 * Rule for variable declaration statement
+	 * "var" is parsed by the caller statement function
+	 * "var" IDENTIFIER ( "=" expression )? ";"
+	 *
+	 * @return Stmt
+	 */
+	private Stmt varDeclaration() {
+		Token name = consume(IDENTIFIER, "Expect variable name.");
+
+		Expr initializer = null;
+		if (match(EQUAL)) {
+			initializer = expression();
+		}
+
+		consume(SEMICOLON, "Expect ';' after variable declaration.");
+		return new Stmt.Var(name, initializer);
+	}
+
+	// ##################################################################
+	// Statements
+	
 	/*
 	 * Main statements parse
 	 *
@@ -52,21 +90,12 @@ class Parser {
 		if (match(PRINT)) return printStatement();
 
 		return expressionStatement();
-	}
-
-	/* 
-	 * The hierarchy is written in a way that
-	 * allow fall-through from lower precedence
-	 * expr to higher
-	 */
-
-	// ##################################################################
-	// Statements
 	
+	}
 	/*
-	 * Parse a print expression
-	 * semicolon is not parsed so we check
-	 * for it here as a 'stop anchor'
+	 * Rule for print expression
+	 * semicolon is the 'stop anchor'
+	 * "print" expression ";"
 	 *
 	 * @return Stmt statement wrapper
 	 */
@@ -77,8 +106,9 @@ class Parser {
 	}
 
 	/*
-	 * Parse an expression statement
+	 * Rule for expression statement
 	 * semicolon is the 'stop anchor'
+	 * expression ";"
 	 *
 	 * @return Stmt statement wrapper
 	 */
@@ -209,6 +239,10 @@ class Parser {
 			return new Expr.Literal(previous().literal);
 		}
 
+		if (match(IDENTIFIER)) {
+			return new Expr.Variable(previous());
+		}
+
 		if (match(LEFT_PAREN)) {
 			Expr expr = expression();
 			consume(RIGHT_PAREN, "Expect ')' after expression.");
@@ -248,8 +282,9 @@ class Parser {
 
 	/*
 	 * Helper method
-	 * Keep consuming token until a statement boundray or
+	 * Keep consuming token until a statement boundary or
 	 * is at the end of the file
+	 * Also use for error handling
 	 */
 	private void synchronize() {
 		advance();

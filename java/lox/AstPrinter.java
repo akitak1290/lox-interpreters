@@ -34,6 +34,11 @@ class AstPrinter implements Expr.Visitor<String> {
     		return parenthesize(expr.operator.lexeme, expr.right);
   	}
 
+	@Override
+	public String visitVariableExpr(Expr.Variable expr) {
+		return "";
+	}	
+
 	/*
 	 * A helper method to wraps a name and a
 	 * list of subexpressions in parentheses
