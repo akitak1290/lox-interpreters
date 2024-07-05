@@ -89,7 +89,8 @@ public class Lox {
 		// Lox's static mothod to report error
 		switch (DEBUG_FLAG) {
 			case "":
-				// No debug flag, let fallthrough to
+			case "assignment":
+				// let fallthrough to
 				// the most recent added part.
 				// TODO: refactor this when done with the interpreter...
 			case "interpreting":
@@ -140,7 +141,7 @@ public class Lox {
 	 * Error reporter for the interpreter
 	 */
 	static void runtimeError(RuntimeError error) {
-		System.err.println(error.getMessage() + "\n[line " + error.token.line + "]");
+		System.err.println("[line " + error.token.line + "] Runtime error: " + error.getMessage());
 		hadRuntimeError = true;
 	}
 

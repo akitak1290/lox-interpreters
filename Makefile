@@ -1,6 +1,6 @@
 # if then else is a shell command
 
-TEST_FOLDERS := scanning parsing evaluating interpreting
+TEST_FOLDERS := scanning parsing evaluating assignment
 
 all: jlox
 
@@ -10,7 +10,9 @@ jlox:
 test: $(TEST_FOLDERS)
 	
 $(TEST_FOLDERS):
-	@ $(MAKE) -f util/test.make ROOT=. INTERPRETER=jlox TEST_TYPE=$@	
+	@ echo "--Running tests for $@ function...---"
+	@ $(MAKE) --no-print-directory -f util/test.make ROOT=. INTERPRETER=jlox TEST_TYPE=$@	
+	@ echo "--Tests for $@ function completed---"
 
 clean:
 	@ $(MAKE) -f util/java.make clean
