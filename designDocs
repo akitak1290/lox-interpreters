@@ -1,36 +1,46 @@
 # 7694135
 - (java interpreter)
-- added the interpreter class (Lox)
-- added the scanner class
+- added the main Lox class
+- added the scanner to translate source code to tokens class
 - added simple build instructions with makefile
 
 # 3cbf2bc
 - (java interpreter)
 - added tests for scanner class
-- added java.make makefile to run tests
+- added java.make and makefile to run tests
 - updated main makefile
 
 # 5d21328
 - (java interpreter)
-- added a standalone java app to generate the Expr class
-  (To use, compile and run `tool.GenerateAst lox` to output
-   the class to the lox directory. Run make after)
+- added a standalone java app to generate the Expr class 
 - added a printer class to debug the abstract syntax tree logic
   also added in main() a temporary logic for testing
-  (To use, go under build/java/ and run `lox.AstPrinter`
 
 # b81fe2c
 - (java interpreter)
-- added the parser class to implement Lox grammar
+- added the parser class to implement Lox grammar and build
+  the abstract syntax tree
 
 # 7081c8f
 - added tests for the parser class
 
 # 82332d5
-- added interpreter class to evaluate the expression represented
-by ast
+- added interpreter class to evaluate the expressions represented
+by ast (mostly arithmetic)
 
 # cfe2216
 - added simple test for the interpreter class
+
+#  bd2f8f5
+- expanded Lox's grammar.
+- expanded the list of supported expressions, now include
+assignment and variable.
+- added Statement class generator.
+- added support for statements, including block, print, var,
+and fallthrough to expression.
+- added basic support for variable and lexical scoping.
+
+# 84aa5bd
+- added tests for new grammar rules.
 
 
