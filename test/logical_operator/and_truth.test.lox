@@ -1,0 +1,9 @@
+// False and nil are false
+// Return the first false statement
+print false and "bad";
+print nil and "bad";
+
+// Everything else is true
+print true and "ok";
+print 0 and "ok";
+print "" and "ok";

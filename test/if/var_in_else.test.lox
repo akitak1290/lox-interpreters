@@ -1,0 +1,2 @@
+if (true) "ok"; else var foo;
+// Can't use a declaration in a single-statement context

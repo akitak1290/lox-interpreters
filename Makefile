@@ -1,6 +1,6 @@
 # if then else is a shell command
 
-TEST_FOLDERS := scanning parsing evaluating assignment
+TEST_FOLDERS := scanning parsing evaluating assignment if
 
 all: jlox
 

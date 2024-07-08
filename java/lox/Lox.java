@@ -90,6 +90,10 @@ public class Lox {
 		switch (DEBUG_FLAG) {
 			case "":
 			case "assignment":
+			case "if":
+			case "logical_operator":
+			case "for":
+			case "while":
 				// let fallthrough to
 				// the most recent added part.
 				// TODO: refactor this when done with the interpreter...

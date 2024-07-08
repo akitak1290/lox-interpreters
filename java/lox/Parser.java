@@ -441,7 +441,7 @@ class Parser {
 		}
 
 		// A token that can't start an expression
-		throw error(peek(), "Expect expresson.");
+		throw error(peek(), "Expect expression.");
 	}
 
 	// ##################################################################
