@@ -32,7 +32,6 @@ by ast (mostly arithmetic)
 - added simple test for the interpreter class
 
 #  bd2f8f5
-- expanded Lox's grammar.
 - expanded the list of supported expressions, now include
 assignment and variable.
 - added Statement class generator.
@@ -43,4 +42,9 @@ and fallthrough to expression.
 # 84aa5bd
 - added tests for new grammar rules.
 
+# c1f0eb7
+- expanded the list of suppored expressions and statements.
+- added branching and looping control flows.
 
+# e41ce61
+- added tests for branching control flow.
