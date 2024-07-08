@@ -1,5 +1,6 @@
 package lox;
 
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -87,7 +88,10 @@ class Parser {
 	 * @return Stmt
 	 */
 	private Stmt statement() {
+		if (match(FOR)) return forStatement();
+		if (match(IF)) return ifStatement();
 		if (match(PRINT)) return printStatement();
+		if (match(WHILE)) return whileStatement();
 		// !shouldn't block handles wrapping statements
 		// in Stmt.Block()?
 		// TODO: check this later.
@@ -96,6 +100,91 @@ class Parser {
 		return expressionStatement();
 	
 	}
+
+	/*
+	 * Rule for for loop statement
+	 * "for" "(" ( varDecl | exprStmt | ";" )
+	 * express? ";" expression? ")"
+	 * statement
+	 * Allow all three clauses to be empty (for(;;){})
+	 *
+	 * return Stmt
+	 */
+	private Stmt forStatement() {
+		consume(LEFT_PAREN, "Expect '(' after 'for'.");
+
+		// initializer clause
+		Stmt initializer;
+		if (match(SEMICOLON)) {
+			initializer = null;
+		} else if (match(VAR)) {
+			initializer = varDeclaration();
+		} else {
+			// expr stmt instead of exmp to
+			// ensure that it is a stmt.
+			initializer = expressionStatement();
+		}
+
+		// condition clause
+		Expr condition = null;
+		if (!check(SEMICOLON)) {
+			condition = expression();
+		}
+		consume(SEMICOLON, "Expect ';' after loop condition.");
+
+		// increment clause
+		Expr increment = null;
+		if (!check(RIGHT_PAREN)) {
+			increment = expression();
+		}
+		consume(RIGHT_PAREN, "Expect ')' after for clauses.");
+
+		// body statement
+		Stmt body = statement();
+		if (increment != null) { // safeguarding 
+			body = new Stmt.Block(
+				Arrays.asList(
+					body,
+					new Stmt.Expression(increment)));
+		}
+
+		// desugar to a while loop, something
+		// we already have
+		if (condition == null) condition = new Expr.Literal(true);
+		body = new Stmt.While(condition, body);
+
+		if (initializer != null) {
+			// create the initializer first, then run the
+			// loop.
+			body = new Stmt.Block(Arrays.asList(initializer, body));
+		}
+
+		return body;
+	}
+
+	/*
+	 * Rule for branching control statement
+	 * semicolon is the 'stop anchor'
+	 * "if" "(" expression ")" statement ( "else" statement )?;
+	 *
+	 * return Stmt
+	 */
+	private Stmt ifStatement() {
+		consume(LEFT_PAREN, "Expect '(' after 'if'.");
+		Expr condition = expression();
+		consume(RIGHT_PAREN, "Expect ')' after if condition.");
+		Stmt thenBranch = statement();
+		Stmt elseBranch = null;
+
+		// Greedy, the inner most if will grab the next 'else'
+		// if it sees one.
+		if (match(ELSE)) {
+			elseBranch = statement();
+		}
+
+		return new Stmt.If(condition, thenBranch, elseBranch);
+	}
+
 	/*
 	 * Rule for print statement
 	 * semicolon is the 'stop anchor'
@@ -107,6 +196,21 @@ class Parser {
 		Expr value = expression();
 		consume(SEMICOLON, "Expect ';' after value.");
 		return new Stmt.Print(value);
+	}
+
+	/*
+	 * Rule for while statement
+	 * "while" "(" expression ")" statement;
+	 *
+	 * @return Stmt
+	 */
+	private Stmt whileStatement() {
+		consume(LEFT_PAREN, "Expect '(' after 'while'.");
+		Expr condition = expression();
+		consume(RIGHT_PAREN, "Expect ')' after condition.");
+		Stmt body = statement();
+
+		return new Stmt.While(condition, body);
 	}
 
 	/*
@@ -161,7 +265,7 @@ class Parser {
 	 */
 	private Expr assignment() {
 		// parse as a r-value
-		Expr expr = equality();
+		Expr expr = or();
 
 		if (match(EQUAL)) {
 			Token equals = previous();
@@ -177,6 +281,40 @@ class Parser {
 			}
 
 			error(equals, "Invalid assignment target.");
+		}
+		return expr;
+	}
+
+	/*
+	 * Rule for logical 'or'
+	 * logic_and ( "or" logic_and )*;
+	 *
+	 * @return Expr
+	 */
+	private Expr or() {
+		Expr expr = and();
+
+		while (match(OR)) {
+			Token operator = previous();
+			Expr right = and();
+			expr = new Expr.Logical(expr, operator, right);
+		}
+		return expr;
+	}
+
+	/*
+	 * Rule for logical 'and'
+	 * equality ( "and" equality )*;
+	 *
+	 * @return Expr
+	 */
+	private Expr and() {
+		Expr expr = equality();
+
+		while (match(AND)) {
+			Token operator = previous();
+			Expr right = equality();
+			expr = new Expr.Logical(expr, operator, right);
 		}
 		return expr;
 	}
