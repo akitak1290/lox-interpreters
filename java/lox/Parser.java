@@ -48,6 +48,7 @@ class Parser {
 	 */
 	private Stmt declaration() {
 		try {
+			if (match(FUN)) return function("function");
 			if (match(VAR)) return varDeclaration();
 
 			return statement();
@@ -61,8 +62,38 @@ class Parser {
 	}
 
 	/*
-	 * Rule for variable declaration statement
-	 * "var" is parsed by the caller statement function
+	 * Rule for function declaration
+	 * "fun" is parsed by the caller
+	 * "fun" IDENTIFIER "(" parameters? ")" block;
+	 * kinda similar for the function handling
+	 * function call...
+	 *
+	 * @params String kind kind of declaration
+	 * @return Stmt.Function
+	 */
+	private Stmt.Function function(String kind) {
+		Token name = consume(IDENTIFIER, "Expect " + kind + " name.");
+		consume(LEFT_PAREN, "Expect '(' after " + kind + " name.");
+		List<Token> parameters = new ArrayList<>();
+		if (!check(RIGHT_PAREN)) {
+			do {
+				if (parameters.size() >= 255) {
+					error(peek(), "Can't have more than 255 parameters.");
+				}
+
+				parameters.add(consume(IDENTIFIER, "Expect parameter name."));
+			} while (match(COMMA));
+		}
+		consume(RIGHT_PAREN, "Expect ')' after parameters.");
+
+		consume(LEFT_BRACE, "Expect '{' befpre " + kind + " body.");
+		List<Stmt> body = block();
+		return new Stmt.Function(name, parameters, body);
+	}
+
+	/*
+	 * Rule for variable declaration
+	 * "var" is parsed by the caller
 	 * "var" IDENTIFIER ( "=" expression )? ";"
 	 *
 	 * @return Stmt
@@ -91,6 +122,7 @@ class Parser {
 		if (match(FOR)) return forStatement();
 		if (match(IF)) return ifStatement();
 		if (match(PRINT)) return printStatement();
+		if (match(RETURN)) return returnStatement();
 		if (match(WHILE)) return whileStatement();
 		// !shouldn't block handles wrapping statements
 		// in Stmt.Block()?
@@ -199,6 +231,23 @@ class Parser {
 	}
 
 	/*
+	 * Rule for return statement
+	 * semicolon is the 'stop anchor'
+	 *
+	 * @return Stmt
+	 */
+	private Stmt returnStatement() {
+		Token keyword = previous();
+		Expr value = null;
+		if (!check(SEMICOLON)) {
+			value = expression();
+		}
+
+		consume(SEMICOLON, "Expect ';' after return value.");
+		return new Stmt.Return(keyword, value);
+	}
+
+	/*
 	 * Rule for while statement
 	 * "while" "(" expression ")" statement;
 	 *
@@ -218,6 +267,7 @@ class Parser {
 	 * Parse a list of statements
 	 * closing curly brace is the
 	 * 'stop anchor'
+	 * '{' is consumed by the caller.
 	 *
 	 * @return Stmt statement wrapper
 	 */
@@ -412,7 +462,55 @@ class Parser {
 			return new Expr.Unary(operator, right);
 		}
 
-		return primary();
+		return call();
+	}
+
+	/*
+	 * Extension of function call
+	 * Rule for function call operator
+	 *
+	 * @return Expr
+	 */
+	private Expr finishCall(Expr callee) {
+		List<Expr> arguments = new ArrayList<>();
+		if (!check(RIGHT_PAREN)) { // check if arguments
+			do {
+				if (arguments.size() >= 255) {
+					// report the error and keep running
+					error(peek(), "Can't have more than 255 arguments.");
+				}
+				// parse each argument expression
+				arguments.add(expression());
+			} while (match(COMMA));
+		}
+		Token paren = consume(RIGHT_PAREN, "Expect ')' after arguments.");
+		return new Expr.Call(callee, paren, arguments);
+	}
+
+	/*
+	 * Rule for call (function call)
+	 * primary ( "(" arguments? ")" )*;
+	 *
+	 * @return Expr
+	 */
+	private Expr call() {
+		// Parse the first expression
+		Expr expr = primary();
+
+		// Parse the returned expr again
+		// if the result is called
+		// this means: fn(1)(2)(3)
+		while (true) {
+			if (match(LEFT_PAREN)) {
+				// Parse the call expression
+				// using the callee expr
+				expr = finishCall(expr);
+			} else {
+				break;
+			}
+		}
+
+		return expr;
 	}
 
 	/*

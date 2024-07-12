@@ -1,5 +1,6 @@
 package lox;
 
+import java.util.ArrayList;
 import java.util.List;
 
 class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
@@ -8,7 +9,27 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 	 * is running
 	 * Refers to the current environment.
 	 */
-	private Environment environment = new Environment();
+	final Environment globals = new Environment();
+	private Environment environment = globals;
+
+	/*
+	 * Define native functions
+	 */
+	Interpreter() {
+		globals.define("clock", new LoxCallable() {
+			@Override
+			public int arity() { return 0; }
+
+			@Override
+			public Object call(Interpreter interpreter,
+						List<Object> arguments) {
+				return (double)System.currentTimeMillis() / 1000.0;
+			}
+
+			@Override
+			public String toString() { return "<native fn>"; }
+		});
+	}
 
 	// #82332d5 accept an expression that represetns an ast
 	// 	    and evaluate it
@@ -146,6 +167,35 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
 		// unreachable
 		return null;
+	}
+
+	@Override
+	public Object visitCallExpr(Expr.Call expr) {
+		Object callee = evaluate(expr.callee);
+
+		List<Object> arguments = new ArrayList<>();
+		for (Expr argument : expr.arguments) {
+			arguments.add(evaluate(argument));
+		}
+
+		// if callee if not a function identifier
+		if (!(callee instanceof LoxCallable)) {
+			throw new RuntimeError(expr.paren,
+				"Can only call functions and classes.");
+		}
+
+		LoxCallable function = (LoxCallable)callee;
+
+		// The Python approach, to throw a runtime error
+		// instead of auto-passing undefined to empty
+		// arguments like JS...
+		if (arguments.size() != function.arity()) {
+			throw new RuntimeError(expr.paren, "Expect " +
+				function.arity() + " arguments but got " +
+				arguments.size() + ".");
+		}
+
+		return function.call(this, arguments);
 	}
 
 	/*
@@ -313,6 +363,19 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 		return null;
 	}
 
+	/*
+	 * Evaluate a function declaration,
+	 * function call is a visitCallStmt...
+	 */
+	@Override
+	public Void visitFunctionStmt(Stmt.Function stmt) {
+		// !Don't forget the current env to define
+		// the closure
+		LoxFunction function = new LoxFunction(stmt, environment);
+		environment.define(stmt.name.lexeme, function);
+		return null;
+	}
+
 	@Override
 	public Void visitIfStmt(Stmt.If stmt) {
 		if (isTruthy(evaluate(stmt.condition))) {
@@ -328,6 +391,14 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 		Object value = evaluate(stmt.expression);
 		System.out.println(stringify(value));
 		return null;
+	}
+
+	@Override
+	public Void visitReturnStmt(Stmt.Return stmt) {
+		Object value = null;
+		if (stmt.value != null) value = evaluate(stmt.value);
+
+		throw new Return(value);
 	}
 
 }
