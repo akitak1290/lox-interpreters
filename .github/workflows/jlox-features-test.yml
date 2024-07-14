@@ -1,0 +1,15 @@
+name: jlox features test
+run-name: run jlox against all lox tests
+on: [push]
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+
+      - name: build
+        run: make
+
+      - name: test
+        run: make test
