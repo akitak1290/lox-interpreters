@@ -4,16 +4,29 @@
 TEST_DIR := $(ROOT)/test/$(TEST_TYPE)
 TEST_FILES := $(wildcard $(TEST_DIR)/*.test.lox)
 ACTION_LIST := $(patsubst $(TEST_DIR)/%.test.lox, $(TEST_DIR)/%, $(TEST_FILES))
+TMP_FILE := ./cnt.tmp
 
-test: $(ACTION_LIST)
+total_tests := $(words $(TEST_FILES))
+
+test: prep $(ACTION_LIST)
+	@ passed=$$(wc -l < $(TMP_FILE)); \
+	rm $(TMP_FILE); \
+	echo "$$passed/$(total_tests) tests passed"; \
+	if [ $$passed -lt $(total_tests) ]; then \
+		exit 1; \
+	fi
+
+prep:
+	@ touch $(TMP_FILE)
 
 # Some tests need to exit with an error
 # For those, we compare the error with .result
 # and tell make to continue running with '-'
 $(ACTION_LIST):
-	-@ $(ROOT)/$(INTERPRETER) $@.test.lox --debug $(TEST_TYPE) >$@.tmp 2>&1
+	@ $(ROOT)/$(INTERPRETER) $@.test.lox --debug $(TEST_TYPE) >$@.tmp 2>&1 || true
 	@ if diff -q $@.result.lox $@.tmp > /dev/null; then \
 		echo "Test $@: PASSED"; \
+		echo "1" >> $(TMP_FILE); \
 		rm $@.tmp; \
 	else \
 		echo "Test $@: FAILED"; \
@@ -21,4 +34,4 @@ $(ACTION_LIST):
 		rm $@.tmp; \
 	fi
 
-.PHONY: test $(ACTION_LIST)
+.PHONY: test prep $(ACTION_LIST)
