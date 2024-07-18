@@ -101,7 +101,12 @@ public class Lox {
 				parser = new Parser(tokens);
 				List<Stmt> statements = parser.parse();
 
-				if (hadError) return;
+				if (hadError) return; // check for Parser error
+
+				Resolver resolver = new Resolver(interpreter);
+				resolver.resolve(statements);
+
+				if (hadError) return; // check for Resolver error
 
 				interpreter.interpret(statements);
 				break;

@@ -79,4 +79,39 @@ class Environment {
 	void define(String name, Object value) {
 		values.put(name, value);
 	}
+
+	/*
+	 * Variable loop up method at a certain
+	 * scope
+	 *
+	 * ! This class has faith that the variable exist
+	 * ! as Resolver should have found it!
+	 *
+	 * @return Object expression that @name points
+	 * 	   to at scope of @distance
+	 */
+	Object getAt(int distance, String name) {
+		return ancestor(distance).values.get(name);
+	}
+	/*
+	 * Variable assignment at a specific scope
+	 */
+	void assignAt(int distance, Token name, Object value) {
+		ancestor(distance).values.put(name.lexeme, value);
+	}
+
+	/*
+	 * Return the parent environment that is
+	 * @disntance away from the current one
+	 *
+	 * @return Environment
+	 */
+	Environment ancestor(int distance) {
+		Environment environment = this;
+		for (int i = 0; i < distance; i++) {
+			environment = environment.enclosing;
+		}
+
+		return environment;
+	}
 }

@@ -1,7 +1,9 @@
 package lox;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 	/*
@@ -11,6 +13,11 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 	 */
 	final Environment globals = new Environment();
 	private Environment environment = globals;
+	/*
+	 * Resolved identifiers, populated by the Resolve class
+	 */
+	private final Map<Expr, Integer> locals = new HashMap<>();
+
 
 	/*
 	 * Define native functions
@@ -278,6 +285,19 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
 	/*
 	 * Helper method
+	 * Store the scope distance from the current
+	 * scope and the scope @expr is defined as
+	 * @depth
+	 * 
+	 * @expr Expr
+	 * @depth int the distance
+	 */
+	void resolve(Expr expr, int depth) {
+		locals.put(expr, depth);
+	}
+
+	/*
+	 * Helper method
 	 * Execute a block statement
 	 * This can call to another visitBlockStmt to
 	 * run an inner block, hence why we need to
@@ -344,7 +364,15 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 	@Override
 	public Object visitAssignExpr(Expr.Assign expr) {
 		Object value = evaluate(expr.value);
-		environment.assign(expr.name, value);
+		// environment.assign(expr.name, value);
+		Integer distance = locals.get(expr);
+		if (distance != null) {
+			// Assign the identifier at a certain scope
+			// defined by the Resolver class
+			environment.assignAt(distance, expr.name, value);
+		} else {
+			globals.assign(expr.name, value);
+		}
 		return value;
 	}
 
@@ -354,7 +382,16 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 	 */
 	@Override
 	public Object visitVariableExpr(Expr.Variable expr) {
-		return environment.get(expr.name);
+		//return environment.get(expr.name);
+		return loopUpVariable(expr.name, expr);
+	}
+	private Object loopUpVariable(Token name, Expr expr) {
+		Integer distance = locals.get(expr);
+		if (distance != null) {
+			return environment.getAt(distance, name.lexeme);
+		} else {
+			return globals.get(name);
+		}
 	}
 
 	@Override
