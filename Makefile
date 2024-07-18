@@ -1,4 +1,4 @@
-TEST_FOLDERS := scanning parsing evaluating assignment if
+TEST_FOLDERS := scanning parsing evaluating assignment if closure
 TMP_FILE := ./err.tmp
 
 all: jlox

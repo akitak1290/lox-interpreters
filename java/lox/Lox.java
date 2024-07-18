@@ -94,6 +94,7 @@ public class Lox {
 			case "logical_operator":
 			case "for":
 			case "while":
+			case "closure":
 				// let fallthrough to
 				// the most recent added part.
 				// TODO: refactor this when done with the interpreter...
