@@ -78,6 +78,22 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
 		return evaluate(expr.right);
 	}
+	@Override
+	public Object visitSetExpr(Expr.Set expr) {
+		Object object = evaluate(expr.object);
+
+		if (!(object instanceof LoxInstance)) {
+			throw new RuntimeError(expr.name, "Only instances have fields.");
+		}
+
+		Object value = evaluate(expr.value);
+		((LoxInstance)object).set(expr.name, value);
+		return value;
+	}
+	@Override
+	public Object visitThisExpr(Expr.This expr) {
+		return lookUpVariable(expr.keyword, expr);
+	}
 
 	@Override
 	public Object visitGroupingExpr(Expr.Grouping expr) {
@@ -203,6 +219,17 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 		}
 
 		return function.call(this, arguments);
+	}
+
+	@Override
+	public Object visitGetExpr(Expr.Get expr) {
+		Object object = evaluate(expr.object);
+		if (object instanceof LoxInstance) {
+			// Loop up the correct property
+			return ((LoxInstance) object).get(expr.name);
+		}
+
+		throw new RuntimeError(expr.name, "Only instances have properties.");
 	}
 
 	/*
@@ -334,6 +361,26 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 	}
 
 	/*
+	 * Evaluate a class statement
+	 */
+	@Override
+	public Void visitClassStmt(Stmt.Class stmt) {
+		environment.define(stmt.name.lexeme, null);
+		
+		Map<String, LoxFunction> methods = new HashMap<>();
+		for (Stmt.Function method : stmt.methods) {
+			LoxFunction function = new LoxFunction(method, environment);
+			methods.put(method.name.lexeme, function);
+		}
+		
+		LoxClass klass = new LoxClass(stmt.name.lexeme, methods);
+		// define before assign allows for self reference
+		// within the class
+		environment.assign(stmt.name, klass);
+		return null;
+	}
+
+	/*
 	 * Evaluate a variable declaration statement,
 	 * assign null as default value and add to
 	 * the enviroment.
@@ -383,9 +430,9 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 	@Override
 	public Object visitVariableExpr(Expr.Variable expr) {
 		//return environment.get(expr.name);
-		return loopUpVariable(expr.name, expr);
+		return lookUpVariable(expr.name, expr);
 	}
-	private Object loopUpVariable(Token name, Expr expr) {
+	private Object lookUpVariable(Token name, Expr expr) {
 		Integer distance = locals.get(expr);
 		if (distance != null) {
 			return environment.getAt(distance, name.lexeme);

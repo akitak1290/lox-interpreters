@@ -18,6 +18,19 @@ class LoxFunction implements LoxCallable {
 		this.declaration = declaration;
 	}
 
+	/*
+	 * Create a new LoxFunction from current Stmt.Function
+	 * in a sub-environment
+	 * closure -> sub-environemtn -> new function's environment
+	 * The new sub-environment will have one identifier "this"
+	 * that points to @instance
+	 */
+	LoxFunction bind(LoxInstance instance) {
+		Environment environment = new Environment(closure);
+		environment.define("this", instance);
+		return new LoxFunction(declaration, environment);
+	}
+
 	@Override
 	public Object call(Interpreter interpreter, List<Object> arguments) {
 		Environment environment = new Environment(closure);
