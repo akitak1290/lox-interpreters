@@ -48,3 +48,28 @@ and fallthrough to expression.
 
 # e41ce61
 - added tests for branching control flow.
+
+# 958cfaa
+- added functions.
+- expanded the list of supported expressions / statements,
+now include function call / return, function declaration,
+function and paramenters and arguments products.
+
+# 0b2ae56
+- made test scipt more verbose, now also exit with correct
+status to reflect if a test(s) has failed or all tests
+passed.
+- added CI workflow with Github Actions using the make test
+script.
+
+# 06d1a7a
+- added a resolver to squeeze in between parsing phase and
+interpreting phase to bind identifiers (var/fun) to their
+"correct" environment to refine `closure` and for future
+functionalities.
+
+# 2aac662
+- added classes, with instance creation, properties and methods,
+`this` object, constructors.
+- expanded the list of supported statements, now include
+class declaration.
