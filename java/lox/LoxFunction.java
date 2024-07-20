@@ -13,9 +13,25 @@ class LoxFunction implements LoxCallable {
 	private final Stmt.Function declaration;
 	private final Environment closure;
 
-	LoxFunction(Stmt.Function declaration, Environment closure) {
+	private final boolean isInitializer; // is the function a constructor?
+
+	LoxFunction(Stmt.Function declaration, Environment closure, boolean isInitializer) {
+		this.isInitializer = isInitializer;
 		this.closure = closure;
 		this.declaration = declaration;
+	}
+
+	/*
+	 * Create a new LoxFunction from current Stmt.Function
+	 * in a sub-environment
+	 * closure -> sub-environemtn -> new function's environment
+	 * The new sub-environment will have one identifier "this"
+	 * that points to @instance
+	 */
+	LoxFunction bind(LoxInstance instance) {
+		Environment environment = new Environment(closure);
+		environment.define("this", instance);
+		return new LoxFunction(declaration, environment, isInitializer);
 	}
 
 	@Override
@@ -34,8 +50,13 @@ class LoxFunction implements LoxCallable {
 			// done executing and retore the higher one
 			interpreter.executeBlock(declaration.body, environment);
 		} catch (Return returnValue) {
+			if (isInitializer) return closure.getAt(0, "this");
+
 			return returnValue.value;
 		}
+
+		// A special case for constructor to always return `this`
+		if (isInitializer) return closure.getAt(0, "this");
 		return null;
 	}
 
