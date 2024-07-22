@@ -6,7 +6,9 @@ import java.util.Map;
 import java.util.Stack;
 
 /*
- * Locate where variable declarations are in
+ * This class is used for:
+ * 1. Some static analysis for optimization and
+ * 2. Locate where variable declarations are in
  * the environments stack
  *
  * This class squeezes between the parsing phase and the
@@ -40,7 +42,8 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 	}
 	private enum ClassType {
 		NONE,
-		CLASS
+		CLASS,
+		SUBCLASS
 	}
 	private ClassType currentClass = ClassType.NONE;
 
@@ -60,6 +63,22 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 		declare(stmt.name);
 		define(stmt.name);
 
+		// Disallow inherit from self
+		if (stmt.superclass != null && 
+		    stmt.name.lexeme.equals(stmt.superclass.name.lexeme)) {
+			Lox.error(stmt.superclass.name, "A class can't inherit from itself.");	
+		}
+
+		if (stmt.superclass != null) {
+			currentClass = ClassType.SUBCLASS;
+			resolve(stmt.superclass); // to account for nested class
+		}
+
+		if (stmt.superclass != null) {
+			beginScope();
+			scopes.peek().put("super", true);
+		}
+
 		beginScope();
 		scopes.peek().put("this", true); // `this` acts like closure var
 
@@ -73,6 +92,8 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 		}
 		
 		endScope();
+
+		if (stmt.superclass != null) endScope();
 
 		currentClass = enclosingClass;
 		return null;
@@ -209,6 +230,17 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 	public Void visitSetExpr(Expr.Set expr) {
 		resolve(expr.value); // the value to set
 		resolve(expr.object); // the obect with property being set
+		return null;
+	}
+	@Override
+	public Void visitSuperExpr(Expr.Super expr) {
+		if (currentClass == ClassType.NONE) {
+			Lox.error(expr.keyword, "Can't use 'super' outside of a class.");
+		} else if (currentClass != ClassType.SUBCLASS) {
+			Lox.error(expr.keyword, "Can't use 'super' in a class with no superclass.");
+		}
+
+		resolveLocal(expr, expr.keyword);
 		return null;
 	}
 	@Override
