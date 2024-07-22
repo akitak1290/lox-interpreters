@@ -6,7 +6,9 @@ import java.util.Map;
 import java.util.Stack;
 
 /*
- * Locate where variable declarations are in
+ * This class is used for:
+ * 1. Some static analysis for optimization and
+ * 2. Locate where variable declarations are in
  * the environments stack
  *
  * This class squeezes between the parsing phase and the
@@ -68,6 +70,7 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 		}
 
 		if (stmt.superclass != null) {
+			currentClass = ClassType.SUBCLASS;
 			resolve(stmt.superclass); // to account for nested class
 		}
 
@@ -231,6 +234,12 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 	}
 	@Override
 	public Void visitSuperExpr(Expr.Super expr) {
+		if (currentClass == ClassType.NONE) {
+			Lox.error(expr.keyword, "Can't use 'super' outside of a class.");
+		} else if (currentClass != ClassType.SUBCLASS) {
+			Lox.error(expr.keyword, "Can't use 'super' in a class with no superclass.");
+		}
+
 		resolveLocal(expr, expr.keyword);
 		return null;
 	}
