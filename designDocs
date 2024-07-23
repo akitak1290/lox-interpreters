@@ -1,3 +1,5 @@
+This is a tracker for major milestones for this project.
+
 # 7694135
 - (java interpreter)
 - added the main Lox class
@@ -5,19 +7,16 @@
 - added simple build instructions with makefile
 
 # 3cbf2bc
-- (java interpreter)
 - added tests for scanner class
 - added java.make and makefile to run tests
 - updated main makefile
 
 # 5d21328
-- (java interpreter)
 - added a standalone java app to generate the Expr class 
 - added a printer class to debug the abstract syntax tree logic
   also added in main() a temporary logic for testing
 
 # b81fe2c
-- (java interpreter)
 - added the parser class to implement Lox grammar and build
   the abstract syntax tree
 
@@ -73,3 +72,8 @@ functionalities.
 `this` object, constructors.
 - expanded the list of supported statements, now include
 class declaration.
+
+# de20275
+- added inheritance for classes.
+- expanded the list of supported statements, now include
+superclass.
