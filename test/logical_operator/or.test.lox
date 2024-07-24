@@ -1,7 +1,7 @@
 // Return the first true argument
 print 1 or true;
 print false or 1;
-print false of false or true;
+print false or false or true;
 
 // Return the last argument if all are false
 print false or false;
