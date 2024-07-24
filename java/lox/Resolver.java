@@ -246,7 +246,7 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 	@Override
 	public Void visitThisExpr(Expr.This expr) {
 		if (currentClass == ClassType.NONE) {
-			Lox.error(expr.keyword, "Can't use 'this' outside a class.");
+			Lox.error(expr.keyword, "Can't use 'this' outside of a class.");
 			return null;
 		}
 
@@ -306,6 +306,7 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 			if (scopes.get(i).containsKey(name.lexeme)) {
 				// current scope is 0, next outer scope is 1 ...
 				interpreter.resolve(expr, scopes.size() - 1 - i);
+				return;
 			}
 		}
 		// Variable must be global, let interpreter handles that
