@@ -94,20 +94,17 @@ class Scanner {
 					addToken(SLASH);
 				}
 				break;
-			// String literal
-			case '"': string(); break;
-
 			// Whitespace and newlines
 			case ' ':
 			case '\r':
 			case '\t':
 				// Innore whilespace, let it fallthrough 
 				break;
-
 			case '\n':
 				line++;
 				break;
-
+			// String literal
+			case '"': string(); break;
 			default:
 				// ! The case for numbers is put here for conveniency sake
 				if (isDigit(c)) {
