@@ -230,7 +230,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 		// instead of auto-passing undefined to empty
 		// arguments like JS...
 		if (arguments.size() != function.arity()) {
-			throw new RuntimeError(expr.paren, "Expect " +
+			throw new RuntimeError(expr.paren, "Expected " +
 				function.arity() + " arguments but got " +
 				arguments.size() + ".");
 		}
