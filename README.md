@@ -23,6 +23,10 @@ Or pass an argument to the script
 ```
 ./jlox add.lox
 ```
+### Testing
+Tests are setup through `make` scripts that runs the interpreter with `.test.lox` files under `/test` against `.result.lox` files. 
+
+If you want to mess around with the project and want to make sure it stil works correctly, run `make test` or `make test FLAG=verbose` for more details.
 
 ### Basics
 Currently, Lox supports 6 data types:
