@@ -1,0 +1,2 @@
+var arr = Array(2);
+arr.name = "array";

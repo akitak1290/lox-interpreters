@@ -36,6 +36,22 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 			@Override
 			public String toString() { return "<native fn>"; }
 		});
+		globals.define("Array", new LoxCallable() {
+			@Override
+			public int arity() { return 1; } // 1 argument: array length
+			
+			@Override
+			public Object call(Interpreter interpreter,
+						List<Object> arguments) {
+				// cast to double first because Lox only have float
+				int size = (int)(double)arguments.get(0);
+				return new LoxArray(size);
+			}
+
+			@Override
+			public String toString() { return "<array>"; }
+		});
+
 	}
 
 	// #82332d5 accept an expression that represetns an ast

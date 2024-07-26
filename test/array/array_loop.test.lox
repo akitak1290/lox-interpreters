@@ -1,0 +1,10 @@
+var arr = Array(5);
+
+var i = 0;
+
+while (i < arr.length) {
+	arr.set(i, i);
+	i = i + 1;
+}
+
+print arr;

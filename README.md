@@ -61,6 +61,7 @@ fun makeCounter() {
 ```
 
 Lox supports OOP features, so it also has classes with properties and methods, inheritance, constructors, `this` and `super`.
+
 ```
 class Doughnut {
   cook() {
@@ -76,6 +77,12 @@ class BostonCream < Doughnut {
 }
 
 BostonCream().cook();
+```
+Lox class is a collection of functions, no properties. Properties of a class is declared inside the constructor:
+```
+init() {
+  this.beverage = "cola";
+}
 ```
 
 ### Syntax

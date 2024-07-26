@@ -48,7 +48,7 @@ public class Lox {
 				System.exit(64); // standard UNIX exit code
 			}
 		} else {
-			System.out.println("Usage: jlox [script] --debug [flag]");
+			System.out.println("Usage: jlox [script] --single [flag]");
 			System.exit(64); // standard UNIX exit code
 		}
 	}
