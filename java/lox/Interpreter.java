@@ -241,6 +241,9 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 			case SLASH:
 				checkNumberOperands(expr.operator, left, right);
 				return (double)left / (double)right;
+			case MODULO:
+				checkNumberOperands(expr.operator, left, right);
+				return (double)left % (double)right;
 			case STAR:
 				checkNumberOperands(expr.operator, left, right);
 				return (double)left * (double)right;

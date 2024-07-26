@@ -71,6 +71,7 @@ class Scanner {
 			case '+': addToken(PLUS); break;
 			case ';': addToken(SEMICOLON); break;
 			case '*': addToken(STAR); break;
+			case '%': addToken(MODULO); break;
 
 			// 2 characers lexemes
 			case '!':
