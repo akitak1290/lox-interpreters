@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import java.io.IOException;
+
 class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 	/*
 	 * Store variables/identifier, exist while interpreter
@@ -51,7 +53,30 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 			@Override
 			public String toString() { return "<array>"; }
 		});
+		globals.define("clear", new LoxCallable() {
+			@Override
+			public int arity() { return 0; }
 
+			@Override
+			public Object call(Interpreter interpreter,
+						List<Object> arguments) {
+				try {
+					String os = System.getProperty("os.name").toLowerCase();
+					ProcessBuilder pb;
+					if (os.contains("win")) {
+						pb = new ProcessBuilder("cmd", "/c", "cls");
+					} else {
+						pb = new ProcessBuilder("clear");
+					}
+					pb.inheritIO().start().waitFor();
+				} catch (IOException | InterruptedException e) {
+					// handle here
+					return false;
+				} finally {
+					return true;
+				}
+			}
+		});
 	}
 
 	// #82332d5 accept an expression that represetns an ast
