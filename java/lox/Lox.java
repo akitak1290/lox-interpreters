@@ -22,7 +22,11 @@ public class Lox {
 	static boolean hadRuntimeError = false;
 
 	// For running tests on individual parts
-	static String DEBUG_FLAG = "";	
+	private enum Component {
+		SCANNER,
+		PARSER,
+		EVALUATOR
+	}
 
 	/*
 	 * There are 2 ways to run a lox file
@@ -33,10 +37,16 @@ public class Lox {
 		if (args.length == 0) {
 			runPrompt();
 		} else if (args.length == 1) {
-			runFile(args[0]);
-		} else if (args.length == 3 && args[1].equals("--debug")) {
-			DEBUG_FLAG = args[2];
-			runFile(args[0]);
+			runFile(args[0], null);
+		} else if (args.length == 3 && args[1].equals("--single")) {
+			try {
+				Component onlyComponent = Component.valueOf(args[2].toUpperCase());
+				runFile(args[0], onlyComponent);
+			} catch (IllegalArgumentException e) {
+				System.out.println("Usage: Options for --single includes" +
+						   " 'scanner', 'parser', 'or 'evaluator'.");
+				System.exit(64); // standard UNIX exit code
+			}
 		} else {
 			System.out.println("Usage: jlox [script] --debug [flag]");
 			System.exit(64); // standard UNIX exit code
@@ -46,9 +56,9 @@ public class Lox {
 	/*
 	 * To run a lox file
 	 */
-	private static void runFile(String path) throws IOException {
+	private static void runFile(String path, Component onlyComponent) throws IOException {
 		byte[] bytes = Files.readAllBytes(Paths.get(path));
-		run(new String(bytes, Charset.defaultCharset()));
+		runner(new String(bytes, Charset.defaultCharset()), onlyComponent);
 
 		// Some etiquette when the interpreter quits
 		// with and error
@@ -63,18 +73,25 @@ public class Lox {
 	private static void runPrompt() throws IOException {
 		InputStreamReader input = new InputStreamReader(System.in);
 		BufferedReader reader = new BufferedReader(input);
-
+		
 		// infinite loop until EOF signal
 		// kill with Ctr-D
 		for (;;) {
 			System.out.print("> ");
 			String line = reader.readLine();
 			if (line == null) break;
-			run(line);
+			runner(line, null);
 
 			// reset flag
 			hadError = false;
 		}
+	}
+
+	private static void runner(String source, Component onlyComponent) {
+		if (onlyComponent == null) run(source);
+		else if (onlyComponent == Component.SCANNER) runScanner(source);
+		else if (onlyComponent == Component.PARSER) runParser(source);
+		else if (onlyComponent == Component.EVALUATOR) runExprInterpreter(source);
 	}
 
 	/*
@@ -83,60 +100,49 @@ public class Lox {
 	private static void run(String source) {
 		Scanner scanner = new Scanner(source);
 		List<Token> tokens = scanner.scanTokens();
-		Parser parser = null;
-		Expr expression = null;
-		// hadError is set when the parser calls
-		// Lox's static mothod to report error
-		switch (DEBUG_FLAG) {
-			case "":
-			case "assignment":
-			case "if":
-			case "logical_operator":
-			case "for":
-			case "while":
-				// let fallthrough to
-				// the most recent added part.
-				// TODO: refactor this when done with the interpreter...
-			case "interpreting":
-				parser = new Parser(tokens);
-				List<Stmt> statements = parser.parse();
+		Parser parser = new Parser(tokens);
+		List<Stmt> statements = parser.parse();
 
-				if (hadError) return; // check for Parser error
+		if (hadError) return; // check for Parser error
 
-				Resolver resolver = new Resolver(interpreter);
-				resolver.resolve(statements);
+		Resolver resolver = new Resolver(interpreter);
+		resolver.resolve(statements);
 
-				if (hadError) return; // check for Resolver error
+		if (hadError) return; // check for Resolver error
 
-				interpreter.interpret(statements);
-				break;
-			case "evaluating":
-				parser = new Parser(tokens);
-				expression = parser.parseExpression();
+		interpreter.interpret(statements);
+	}
 
-				if (hadError) return;
+	/*
+	 * Helper method, each run a part of 
+	 * the interpreter
+	 */
+	private static void runExprInterpreter(String source) {	
+		Scanner scanner = new Scanner(source);
+		List<Token> tokens = scanner.scanTokens();
+		Parser parser = new Parser(tokens);
+		Expr expression = parser.parseExpression();
 
-				interpreter.interpretExpression(expression);
-				break;
-			case "parsing":
-				parser = new Parser(tokens);
-				expression = parser.parseExpression();
+		if (hadError) return;
 
-				if (hadError) return;
+		interpreter.interpretExpression(expression);
+	}
+	private static void runParser(String source) {	
+		Scanner scanner = new Scanner(source);
+		List<Token> tokens = scanner.scanTokens();
+		Parser parser = new Parser(tokens);
+		Expr expression = parser.parseExpression();
 
-				System.out.println(new AstPrinter().print(expression));
-				break;
-			case "scanning":
-				for (Token token : tokens) {
-		  			System.out.println(token);
-				}
-				break;
-			default:
-				// This should be handled in main()
-				// before it reaches here
-				// TODO: refactor this
-				return;
-		}
+		if (hadError) return;
+
+		System.out.println(new AstPrinter().print(expression));
+	}
+	private static void runScanner(String source) {
+		Scanner scanner = new Scanner(source);
+		List<Token> tokens = scanner.scanTokens();
+		for (Token token : tokens) {
+			System.out.println(token);
+		}		
 	}
 	
 	/*
