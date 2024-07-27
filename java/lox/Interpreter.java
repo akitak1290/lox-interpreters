@@ -76,6 +76,28 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 					return true;
 				}
 			}
+
+			@Override
+			public String toString() { return "<native fn>"; }
+		});
+		globals.define("sleep", new LoxCallable() {
+			@Override
+			public int arity() { return 1; }
+
+			@Override
+			public Object call(Interpreter interpreter,
+						List<Object> arguments) {
+				try {
+					Thread.sleep((int)(double)arguments.get(0));
+					return true;
+				} catch (InterruptedException e) {
+					Thread.currentThread().interrupt();
+					return false;
+				}
+			}
+			
+			@Override
+			public String toString() { return "<native fn>"; }
 		});
 	}
 
