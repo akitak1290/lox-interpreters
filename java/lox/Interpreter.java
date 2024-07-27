@@ -54,12 +54,15 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 			public String toString() { return "<array>"; }
 		});
 		globals.define("clear", new LoxCallable() {
+			// Current implementation doesn't support escape sequences yet
+			// so this is a hack
 			@Override
 			public int arity() { return 0; }
 
 			@Override
 			public Object call(Interpreter interpreter,
 						List<Object> arguments) {
+				/*
 				try {
 					String os = System.getProperty("os.name").toLowerCase();
 					ProcessBuilder pb;
@@ -75,6 +78,10 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 				} finally {
 					return true;
 				}
+				*/
+				System.out.print("\033[H\033[J");
+				System.out.flush();
+				return true;
 			}
 
 			@Override
