@@ -157,30 +157,45 @@ class Scanner {
 		// Parse special sequence
 		StringBuilder result = new StringBuilder();
 		for (int i = 0; i < value.length(); i++) {
-			if (value.charAt(i) == '\\') {
-				if (i + 1 >= value.length()) {
-					Lox.error(line, "Unclosed string literal.");
-					return; // a super nested return, might benefit from refactoring
-				} else {
-					char next = value.charAt(i + 1);
-					switch (next) {
-						case 'n': result.append('\n'); break;
-						case 'r': result.append('\r'); break;
-						case 't': result.append('\t'); break;
-						case 'b': result.append('\b'); break;
-						case '\\': result.append('\\'); break;
-						// TODO: add handle for octal and hex
-						default:
-							// For unsupported escape sequences,
-							// append them as is.
-							// result.append('\\');
-							result.append(next);
-							break;
-					}
-					i++; // next is processed, jump over
-				}
-			} else {
+			if (value.charAt(i) != '\\') {
 				result.append(value.charAt(i));
+				continue;
+			}	
+				
+			if (i + 1 >= value.length()) {
+				Lox.error(line, "Unclosed string literal.");
+				return; // a super nested return, might benefit from refactoring
+			}
+
+			char next = value.charAt(i + 1);
+			switch (next) {
+				case 'n': result.append('\n'); break;
+				case 'r': result.append('\r'); break;
+				case 't': result.append('\t'); break;
+				case 'b': result.append('\b'); break;
+				case '\\': result.append('\\'); break;
+				case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7':
+					// Should I allow null?
+					int octal = 0;
+					int j = i + 1;
+					while (j < value.length() && j < i + 4 &&
+						Character.isDigit(value.charAt(j)) &&
+						value.charAt(j) <= '7') {
+							octal = octal * 8 + (value.charAt(j) - '0');
+							j++;
+					}
+					if (octal < 0 || octal > 255) {
+						Lox.error(line, "Octal escape sequence out of bounds.");
+						return;
+					}
+					result.append((char) octal);
+					i = j - 1; // all octal characters processed, jump over
+					break;
+				// TODO: add handle for hex
+				default:
+					// ignore the slash
+					result.append(next);
+					break;
 			}
 		}
 		

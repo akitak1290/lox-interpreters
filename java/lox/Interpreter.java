@@ -269,9 +269,13 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 				throw new RuntimeError(expr.operator, "Operands must be two numbers or two strings.");
 			case SLASH:
 				checkNumberOperands(expr.operator, left, right);
+				if ((double)right == 0) throw new RuntimeError(expr.operator, "Divide by zero");
+				
 				return (double)left / (double)right;
 			case MODULO:
 				checkNumberOperands(expr.operator, left, right);
+				if ((double)right == 0) throw new RuntimeError(expr.operator, "Divide by zero");
+				
 				return (double)left % (double)right;
 			case STAR:
 				checkNumberOperands(expr.operator, left, right);
