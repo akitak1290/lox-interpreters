@@ -10,6 +10,11 @@ It leverages the JVM to support:
 
 [designDocs](designDocs) is used to keep track of changes as the project progresses to its final form.
 
+## Table of Contents
+- [Setup](#setup)
+- [Testing](#testing)
+- [Bacis](#basics)
+- [Titbits](#titbits)
 
 ## Getting Started
 ### Setup
@@ -29,11 +34,12 @@ Tests are setup through `make` scripts that runs the interpreter with `.test.lox
 If you want to mess around with the project and want to make sure it stil works correctly, run `make test` or `make test FLAG=verbose` for more details.
 
 ### Basics
-Currently, Lox supports 6 data types:
+Currently, Lox supports 7 data types:
 - nil
 - boolean
 - floats
 - string
+- array
 - functions / native functions (`clock()`)
 - classes
 
@@ -84,8 +90,37 @@ init() {
   this.beverage = "cola";
 }
 ```
+New array is called by calling the native function `Array(2)` and pass in the size of the array.
+```
+var arr = Array(5);
 
-### Syntax
+var i = 0;
+
+while (i < arr.length) {
+        arr.set(i, i);
+        i = i + 1;
+}
+```
+### Native functions
+- `clock()`: use to get the current time in seconds.
+- `clear()`: use to clear the console.
+- `Array()`: use to create a new array.
+
+### Titbits
 The complete syntax of Lox can be found [here](https://craftinginterpreters.com/appendix-i.html).
+
+The currect project supports the following basic escape sequences
+- `\n`
+- `\t`
+- `\r`
+- `\b`
+- `\\`
+
+Strings are characters surrounded by double quotes, single quotes are not allowed, as well
+as using double quote character as a string literal.
+
+Numbers are represented internally using float.
+
+Comments starts with `//`.
 
 ### 

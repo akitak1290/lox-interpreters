@@ -153,7 +153,38 @@ class Scanner {
 
 		// Trim the surrounding quotes
 		String value = source.substring(start + 1, current - 1);
-		addToken(STRING, value);
+		
+		// Parse special sequence
+		StringBuilder result = new StringBuilder();
+		for (int i = 0; i < value.length(); i++) {
+			if (value.charAt(i) == '\\') {
+				if (i + 1 >= value.length()) {
+					Lox.error(line, "Unclosed string literal.");
+					return; // a super nested return, might benefit from refactoring
+				} else {
+					char next = value.charAt(i + 1);
+					switch (next) {
+						case 'n': result.append('\n'); break;
+						case 'r': result.append('\r'); break;
+						case 't': result.append('\t'); break;
+						case 'b': result.append('\b'); break;
+						case '\\': result.append('\\'); break;
+						// TODO: add handle for octal and hex
+						default:
+							// For unsupported escape sequences,
+							// append them as is.
+							// result.append('\\');
+							result.append(next);
+							break;
+					}
+					i++; // next is processed, jump over
+				}
+			} else {
+				result.append(value.charAt(i));
+			}
+		}
+		
+		addToken(STRING, result.toString());
 	}
 
 	/*
