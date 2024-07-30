@@ -1,5 +1,7 @@
 # A tree-walk interpreter for the Lox language, built with Java using Bob Nystrom's book "Crafting Interpreters."
-Lox is a simple interpreted, dynamically typed, general-purpose programming language that supports OOP to a limited extend. <br>
+Lox is a simple interpreted, dynamically typed, general-purpose programming language that supports OOP to a limited extend. 
+
+This project is based on JLox, with a few added features.
 
 It leverages the JVM to support:
 - Expressions, statements, and control flow structures.
@@ -8,12 +10,15 @@ It leverages the JVM to support:
 - Garbage collection.
 - Static and runtime error handling.
 
+![pac-man](./assets/pacman.gif)
+![invert-binary-tree](./assets/binarytree.gif)
+
 [designDocs](designDocs) is used to keep track of changes as the project progresses to its final form.
 
 ## Table of Contents
 - [Setup](#setup)
 - [Testing](#testing)
-- [Bacis](#basics)
+- [Basics](#basics)
 - [Titbits](#titbits)
 
 ## Getting Started
@@ -106,6 +111,7 @@ while (i < arr.length) {
 - `clock()`: use to get the current time in seconds.
 - `clear()`: use to clear the console.
 - `Array()`: use to create a new array.
+- `sleep()`: pause runtime execution.
 
 ### Titbits
 The complete syntax of Lox can be found [here](https://craftinginterpreters.com/appendix-i.html).
@@ -147,4 +153,9 @@ print arr.length; // 1
 print arr.get(0) // uh...
 ```
 
-The quickest way to break the interpreter is to run an infinite loop... for now the parser doesn't detect that sort of thing nor does the runtime have handles for it.
+The quickest way to break the interpreter is to run an infinite loop... for now the parser doesn't detect that sort of thing nor does the runtime have handles for it, so..
+
+### TODO:
+    - [ ] add detection for infinite loop
+    - [ ] add more example for lox
+    - [ ] compile java byte code to WebAssembly to create an online playground

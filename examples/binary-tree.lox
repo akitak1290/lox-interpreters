@@ -39,7 +39,7 @@ n1.right = Node(5);
 print "Preorder:";
 printTree(root);
 
-print "Invert:";
+print "Inverting..";
 invertTree(root);
 
 print "Preorder:";
