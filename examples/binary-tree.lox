@@ -1,0 +1,46 @@
+class Node {
+	init(val) {
+		this.val = val;
+		this.left = nil;
+		this.right = nil;
+	}
+}
+
+fun invertTree(root) {
+	if (root == nil) return root;
+	
+	var tmp = root.left;
+	root.left = invertTree(root.right);
+	root.right = invertTree(tmp);
+
+	return root;
+}
+
+fun printTree(root) {
+	print root.val;
+
+	if (root.left != nil) printTree(root.left);
+	if (root.right != nil) printTree(root.right);
+}
+
+// Create the tree
+print "     6";
+print "    /\\";
+print "   4   6";
+print "  /\\";
+print " 2  5";
+var root = Node(6);
+var n1 = Node(4);
+root.left = n1;
+root.right = Node(6);
+n1.left = Node(2);
+n1.right = Node(5);
+
+print "Preorder:";
+printTree(root);
+
+print "Invert:";
+invertTree(root);
+
+print "Preorder:";
+printTree(root);

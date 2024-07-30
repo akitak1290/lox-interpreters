@@ -147,4 +147,4 @@ print arr.length; // 1
 print arr.get(0) // uh...
 ```
 
-Comments starts with `//`.
+The quickest way to break the interpreter is to run an infinite loop... for now the parser doesn't detect that sort of thing nor does the runtime have handles for it.
