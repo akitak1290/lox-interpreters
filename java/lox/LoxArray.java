@@ -19,6 +19,17 @@ class LoxArray extends LoxInstance {
 		// Would this needs to check for OutOfMemoryError?
 		elements = new Object[size];
 
+		initCallables();
+	}
+
+	LoxArray(Object first) {
+		super(null);
+		elements = new Object[1];
+		elements[0] = first;
+		initCallables();
+	}
+
+	private void initCallables() {	
 		getElement = new LoxCallable() {
 			@Override
 			public int arity() {
@@ -27,10 +38,8 @@ class LoxArray extends LoxInstance {
 			@Override
 			public Object call(Interpreter interpreter,
 						List<Object> arguments) {
-				// Cast to double first because Lox only
-				// have float
-				int index = (int)(double)arguments.get(0);
-				return elements[index];
+				Double index = scaryCastNumber(arguments.get(0));
+				return index == null ? null : elements[index.intValue()];
 			}
 		};
 		setElement = new LoxCallable() {
@@ -41,11 +50,20 @@ class LoxArray extends LoxInstance {
 			@Override
 			public Object call(Interpreter interpreter,
 						List<Object> arguments) {
-				int index = (int)(double)arguments.get(0);
+				Double index = scaryCastNumber(arguments.get(0));
+
+				if (index == null) return index;
+
 				Object value = arguments.get(1);
-				return elements[index] = value;
+				return elements[index.intValue()] = value;
 			}
 		};
+	}
+
+	private Double scaryCastNumber(Object value) {
+		if (value instanceof Double) return (double)value;
+		else if (value instanceof Integer) return ((Integer)value).doubleValue();
+		else return null; // this should never be reached
 	}
 
 	@Override
@@ -75,7 +93,13 @@ class LoxArray extends LoxInstance {
 		buffer.append("[");
 		for (int i = 0; i < elements.length; i++) {
 			if (elements[i] == null) buffer.append("nil");
-			else buffer.append(elements[i]);
+			else if (elements[i] instanceof Double || elements[i] instanceof Integer) {
+				String text = elements[i].toString();
+				if (text.endsWith(".0")) {
+					text = text.substring(0, text.length() - 2);
+				}
+				buffer.append(text);
+			} else buffer.append(elements[i]);
 			
 			if (i != elements.length - 1) buffer.append(", ");
 		}

@@ -34,10 +34,11 @@ Tests are setup through `make` scripts that runs the interpreter with `.test.lox
 If you want to mess around with the project and want to make sure it stil works correctly, run `make test` or `make test FLAG=verbose` for more details.
 
 ### Basics
-Currently, Lox supports 7 data types:
+Currently, Lox supports 8 data types:
 - nil
 - boolean
-- floats
+- int
+- double
 - string
 - array
 - functions / native functions (`clock()`)
@@ -116,11 +117,34 @@ The currect project supports the following basic escape sequences
 - `\b`
 - `\\`
 
-Strings are characters surrounded by double quotes, single quotes are not allowed, as well
-as using double quote character as a string literal.
+Strings are characters surrounded by double quotes, single quotes are not allowed, as well as using double quote character as a string literal.
 
-Numbers are represented internally using float.
+While both integer and double are supported, at runtime they are treated as double. Arithmetic operations between Number operands will implicitly convert those operands to double, with the exception of `PLUS` that will convert a Number operand to String if the other operand is a String.
+```
+var x = 1;
+var y = 2.5;
+print y-x; // 0.5
+```
+```
+fun isEven(n) {
+  if (n == 0) return true; // n here is a double, as such
+  return isOdd(n - 1); // n - 1 returns a double
+}
+
+fun isOdd(n) {
+  if (n == 0) return false;
+  return isEven(n - 1);
+}
+
+print isEven(4); // true
+print isOdd(3); // true
+```
+
+What happens when something other than an Integer is passed to `Array()`? Instead of reporting a runtime error, I thought it would be fun to do what JS does, by creating an array with the only element being the argument passed (and it's less hassle this way, reporting runtime error requires access to ast by design and native functions don't have that...)
+```
+var arr = Array("uh...");
+print arr.length; // 1
+print arr.get(0) // uh...
+```
 
 Comments starts with `//`.
-
-### 

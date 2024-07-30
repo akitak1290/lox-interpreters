@@ -164,16 +164,31 @@ class Scanner {
 				
 			if (i + 1 >= value.length()) {
 				Lox.error(line, "Unclosed string literal.");
-				return; // a super nested return, might benefit from refactoring
+				return;
 			}
 
 			char next = value.charAt(i + 1);
 			switch (next) {
-				case 'n': result.append('\n'); break;
-				case 'r': result.append('\r'); break;
-				case 't': result.append('\t'); break;
-				case 'b': result.append('\b'); break;
-				case '\\': result.append('\\'); break;
+				case 'n': 
+					result.append('\n'); 
+					i += 1;
+					break;
+				case 'r': 
+					result.append('\r'); 
+					i += 1;
+					break;
+				case 't': 
+					result.append('\t'); 
+					i += 1;
+					break;
+				case 'b': 
+					result.append('\b'); 
+					i += 1;
+					break;
+				case '\\': 
+					result.append('\\'); 
+					i += 1;
+					break;
 				case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7':
 					// Should I allow null?
 					int octal = 0;
@@ -209,15 +224,20 @@ class Scanner {
 	private void number() {
 		while(isDigit(peek())) advance();
 
+		boolean isDouble = false;
+
 		// Look for a fractional part.
 		if (peek() == '.' && isDigit(peekNext())) {
 			// Comsume the "."
 			advance();
 
 			while(isDigit(peek())) advance();
-		}
 
-		addToken(NUMBER, Double.parseDouble(source.substring(start, current)));
+			isDouble = true;
+		}
+		
+		if (isDouble) addToken(NUMBER, Double.parseDouble(source.substring(start, current)));
+		else addToken(NUMBER, Integer.parseInt(source.substring(start, current)));
 	}
 
 	// Helper methods -----------------------------------------

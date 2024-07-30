@@ -46,8 +46,12 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 			public Object call(Interpreter interpreter,
 						List<Object> arguments) {
 				// cast to double first because Lox only have float
-				int size = (int)(double)arguments.get(0);
-				return new LoxArray(size);
+				Double size = scaryCastNumber(arguments.get(0));	
+				if (size == null) {
+					return new LoxArray(arguments.get(0));
+				} else {
+					return new LoxArray(size.intValue());
+				}
 			}
 
 			@Override
@@ -196,8 +200,8 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 			case BANG:
 				return !isTruthy(right);
 			case MINUS:
-				checkNumberOperand(expr.operator, right);
-				return -(double)right;
+				checkNumberOperand(expr.operator, right);	
+				return -(double)scaryCastNumber(right);
 		}
 
 		return null;
@@ -211,75 +215,102 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 	 * @operand Object
 	 *
 	 * @throw RuntimeError
-	 */
+	*/
 	private void checkNumberOperand(Token operator, Object operand) {
-		if (operand instanceof Double) return;
+		if (operand instanceof Double || operand instanceof Integer) return;
 		throw new RuntimeError(operator, "Operand must be a number");
 	}
 
 	/*
 	 * Helper method
-	 * Check if 2 operands are numbers
+	 * Check if 2 operands are numbers,
+	 * cast, and return them
 	 *
 	 * @operator Token
 	 * @left Object
 	 * @right Object
 	 *
 	 * @throw RuntimeError
+	*/
+	private List<Double> checkNumberOperands(Token operator, Object left, Object right) {
+		if ((left instanceof Double || left instanceof Integer) &&
+		     (right instanceof Double || right instanceof Integer)) {
+			List<Double> values = new ArrayList<>();
+
+			values.add(scaryCastNumber(left));
+			values.add(scaryCastNumber(right));
+
+			return values;
+		}
+		throw new RuntimeError(operator, "Operands must be numbers");
+	}
+	/*
+	 * Cast to double from Integer or Double,
+	 * if none, then returns null
+	 *
+	 * Scary because caller has to manually check if the @value
+	 * is either an int or double, wlse it will returns null
+	 * @return Double | null
 	 */
-	 private void checkNumberOperands(Token operator, Object left, Object right) {
-		 if (left instanceof Double && right instanceof Double) return;
-		 throw new RuntimeError(operator, "Operands must be numbers");
-	 }
+	private Double scaryCastNumber(Object value) {
+		if (value instanceof Double) return (double)value;
+		else if (value instanceof Integer) return ((Integer)value).doubleValue();
+		else return null; // this should never be reached
+	}
 
 	@Override
 	public Object visitBinaryExpr(Expr.Binary expr) {
 		Object left = evaluate(expr.left);
 		Object right = evaluate(expr.right);
 
+		// Maybe there is a pattern that makes this better...
+		List<Double> values;
 		switch (expr.operator.type) {
 			case GREATER:
-				checkNumberOperands(expr.operator, left, right);
-				return (double)left > (double)right;
+				values = checkNumberOperands(expr.operator, left, right);
+				return (double)(values.get(0)) > (double)(values.get(1));
 			case GREATER_EQUAL:
-				checkNumberOperands(expr.operator, left, right);
-				return (double)left >= (double)right;
+				values = checkNumberOperands(expr.operator, left, right);
+				return (double)(values.get(0)) >= (double)(values.get(1));
 			case LESS:
-				checkNumberOperands(expr.operator, left, right);
-				return (double)left < (double)right;
+				values = checkNumberOperands(expr.operator, left, right);
+				return (double)(values.get(0)) < (double)(values.get(1));
 			case LESS_EQUAL:
-				checkNumberOperands(expr.operator, left, right);
-				return (double)left <= (double)right;
+				values = checkNumberOperands(expr.operator, left, right);
+				return (double)(values.get(0)) <= (double)(values.get(1));
 			case BANG_EQUAL:
 				return !isEqual(left, right);
 			case EQUAL_EQUAL:
 				return isEqual(left, right);
 			case MINUS:
-				checkNumberOperands(expr.operator, left, right);
-				return (double)left - (double)right;
+				values = checkNumberOperands(expr.operator, left, right);
+				return (double)(values.get(0)) - (double)(values.get(1));
 			case PLUS:
-				if (left instanceof Double && right instanceof Double) {
-					return (double)left + (double)right;
-				}
-
-				if (left instanceof String && right instanceof String) {
+				if (left instanceof String && right instanceof Number) {
+					return (String)left + (double)(scaryCastNumber(right));
+				} else if (left instanceof Number && right instanceof String) {
+					return (double)(scaryCastNumber(left)) + (String)right;
+				} else if (left instanceof Number && right instanceof Number) {
+					values = checkNumberOperands(expr.operator, left, right);
+					return (double)(values.get(0)) + (double)(values.get(1));
+				} else if (left instanceof String && right instanceof String)  {
 					return (String)left + (String)right;
 				}
-
-				throw new RuntimeError(expr.operator, "Operands must be two numbers or two strings.");
+				
+				throw new RuntimeError(expr.operator, "Operands must be numbers or strings.");
 			case SLASH:
-				checkNumberOperands(expr.operator, left, right);
-				if ((double)right == 0) throw new RuntimeError(expr.operator, "Divide by zero");
+				values = checkNumberOperands(expr.operator, left, right);
+				if ((double)values.get(1) == 0) throw new RuntimeError(expr.operator, "Divide by zero");
 				
-				return (double)left / (double)right;
+				return (double)(values.get(0)) / (double)(values.get(1));
 			case MODULO:
-				checkNumberOperands(expr.operator, left, right);
-				if ((double)right == 0) throw new RuntimeError(expr.operator, "Divide by zero");
+				values = checkNumberOperands(expr.operator, left, right);
+				if ((double)values.get(1) == 0) throw new RuntimeError(expr.operator, "Divide by zero");
 				
-				return (double)left % (double)right;
+				return (double)(values.get(0)) % (double)(values.get(1));
 			case STAR:
-				checkNumberOperands(expr.operator, left, right);
-				return (double)left * (double)right;
+				values = checkNumberOperands(expr.operator, left, right);
+				return (double)(values.get(0)) * (double)(values.get(1));
 		}
 
 		// unreachable
@@ -339,6 +370,10 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 		if (a == null && b == null) return true;
 		if (a == null) return false; // other case is eval next
 
+		if (a instanceof Number && b instanceof Number) {
+			return (double)(scaryCastNumber(a)) == (double)(scaryCastNumber(b));
+		}	
+		
 		return a.equals(b); // java and lox have same logic here
 	}
 
@@ -355,7 +390,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 		// Convert java's types to lox's types
 		if (object == null) return "nil";
 
-		if (object instanceof Double) {
+		if (object instanceof Double || object instanceof Integer) {
 			String text = object.toString();
 			if (text.endsWith(".0")) {
 				// Hack of the decimal part
