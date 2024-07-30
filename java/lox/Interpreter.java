@@ -99,7 +99,11 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 			public Object call(Interpreter interpreter,
 						List<Object> arguments) {
 				try {
-					Thread.sleep((int)(double)arguments.get(0));
+					// TODO: okay this really should report a runtime error...
+					// figure out how native functions can report runtime error
+					Double time = scaryCastNumber(arguments.get(0));	
+					if (time != null) Thread.sleep(time.intValue()); 
+
 					return true;
 				} catch (InterruptedException e) {
 					Thread.currentThread().interrupt();
@@ -287,9 +291,13 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 				return (double)(values.get(0)) - (double)(values.get(1));
 			case PLUS:
 				if (left instanceof String && right instanceof Number) {
-					return (String)left + (double)(scaryCastNumber(right));
+					String text = scaryCastNumber(right).toString();
+					if (text.endsWith(".0")) text = text.substring(0, text.length() -2);
+					return (String)left + text;
 				} else if (left instanceof Number && right instanceof String) {
-					return (double)(scaryCastNumber(left)) + (String)right;
+					String text = scaryCastNumber(left).toString();
+					if (text.endsWith(".0")) text = text.substring(0, text.length() -2);
+					return left + (String)right;
 				} else if (left instanceof Number && right instanceof Number) {
 					values = checkNumberOperands(expr.operator, left, right);
 					return (double)(values.get(0)) + (double)(values.get(1));
