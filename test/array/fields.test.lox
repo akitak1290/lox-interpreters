@@ -1,0 +1,5 @@
+var arr = Array(2);
+print arr.length;
+
+arr.set(0, "here here");
+print arr.get(0);

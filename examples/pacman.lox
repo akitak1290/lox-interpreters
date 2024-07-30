@@ -1,0 +1,22 @@
+print "\033[?25l";    // hide the cursor
+print "\033[H\033[J"; // clear the console
+
+var n = 1;
+var str = "\033[1;1Hᗧ      •••   PAC-MAN   ••••              ";
+
+print str;
+while (true) {
+	if (n > 40) {
+		n = 1; // reset
+		print "\033[H\033[J"; // clear the console
+		print str;
+	}
+	
+	print "\033[1;" + n + "H ᗧ";
+	//print "\033[1;" + (n-1) + "H ";
+
+	print "\033[2;1HFrame:" + n;
+		
+	n = n + 1;
+	sleep(100);
+}
