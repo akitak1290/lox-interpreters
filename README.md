@@ -15,6 +15,8 @@ It leverages the JVM to support:
 
 [designDocs](designDocs) is used to keep track of changes as the project progresses to its final form.
 
+(the project is developed and tested on GNU/Linux system, you can set up wsl to run on windows machines)
+
 ## Table of Contents
 - [Setup](#setup)
 - [Testing](#testing)
@@ -23,7 +25,7 @@ It leverages the JVM to support:
 
 ## Getting Started
 ### Setup
-Compiling and testing the interpreter is done through makefile scripts. You can clone the repo and run `make` to setup JDK and compile the project.
+Compiling and testing the interpreter is done through makefile scripts. You can clone the repo, install jdk, and run `make` to setup JDK and compile the project.
 
 After, you can either try the interpreter in REPL mode.
 ```
