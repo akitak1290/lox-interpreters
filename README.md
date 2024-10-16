@@ -25,7 +25,7 @@ It leverages the JVM to support:
 
 ## Getting Started
 ### Setup
-Compiling and testing the interpreter is done through makefile scripts. You can clone the repo, install jdk, and run `make` to setup JDK and compile the project.
+Compiling and testing the interpreter is done through makefile scripts. You can clone the repo, install jdk, and run `make` to compile the project.
 
 After, you can either try the interpreter in REPL mode.
 ```
